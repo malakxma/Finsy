@@ -3,7 +3,8 @@ import requests
 import os
 from flask_cors import CORS
 
-app = Flask(__name__, static_folder='.', static_url_path='', template_folder='.')
+# Specify 'templates' as the folder for HTML templates
+app = Flask(__name__, static_folder='.', static_url_path='', template_folder='templates')
 CORS(app)
 
 CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
@@ -12,7 +13,7 @@ CLAUDE_API_URL = 'https://api.claude.ai/v1/chat'
 # Serve the HTML file for the chatbot interface
 @app.route('/')
 def index():
-    return render_template('aichat.html')
+    return render_template('Aichat.html')  # Case-sensitive, ensure it matches your file name
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
