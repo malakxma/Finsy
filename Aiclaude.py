@@ -1,17 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import requests
 import os
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='', template_folder='.')
 CORS(app)
 
 CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
 CLAUDE_API_URL = 'https://api.claude.ai/v1/chat'
 
+# Serve the HTML file for the chatbot interface
 @app.route('/')
 def index():
-    return "Welcome to the Chatbot API. Use the /chatbot endpoint to interact with the chatbot."
+    return render_template('aichat.html')
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
