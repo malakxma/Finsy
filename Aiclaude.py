@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify, render_template
 import requests
 import os
-from flask_cors import CORS
+from flask_cors import CORS 
+import anthropic
 
 # Specify 'templates' as the folder for HTML templates
 app = Flask(__name__, static_folder='.', static_url_path='', template_folder='templates')
 CORS(app)
 
-CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY')
-CLAUDE_API_URL = 'https://api.claude.ai/v1/chat'
+client = anthropic.Anthropic(api_key="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")
 
 # Serve the HTML file for the chatbot interface
 @app.route('/')
@@ -21,20 +21,26 @@ def chatbot():
     if not user_input:
         return jsonify({'error': 'No input provided'}), 400
 
-    headers = {'Authorization': f'Bearer {CLAUDE_API_KEY}', 'Content-Type': 'application/json'}
-    data = {
-        'input': user_input,
-        'model': 'claude-v1',
-        'stream': False
-    }
+    try:
+        response = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": user_input}
+            ]
+        )
+        # Log the full response to see its structure
+        print(f"Full API response: {response}")
 
-    response = requests.post(CLAUDE_API_URL, headers=headers, json=data)
+        assistant_response = response.content[0].text
+        return jsonify({'response': assistant_response}), 200
+    
+    except Exception as e:
+        print(f"Error in chatbot route: {e}")
+        return jsonify({'error': f"Internal server error: {str(e)}"}), 500
 
-    if response.status_code == 200:
-        return jsonify({'response': response.json()}), 200
-    else:
-        return jsonify({'error': 'Error connecting to Claude API'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port, use_reloader=False)
+
